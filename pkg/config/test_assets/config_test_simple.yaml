@@ -17,8 +17,6 @@ manifests:
     manifest: |
       ---
       # This is the start of an empty YAML manifest.
-    nodeFilters:
-      - "server:*"
 ports:
   - port: 80:80
     nodeFilters:

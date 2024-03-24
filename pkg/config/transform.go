@@ -28,7 +28,6 @@ import (
 	"io"
 	"net/netip"
 	"os"
-	"path/filepath"
 	"strings"
 
 	wharfie "github.com/rancher/wharfie/pkg/registries"
@@ -43,13 +42,12 @@ import (
 	l "github.com/k3d-io/k3d/v5/pkg/logger"
 	"github.com/k3d-io/k3d/v5/pkg/runtimes"
 	k3d "github.com/k3d-io/k3d/v5/pkg/types"
-	"github.com/k3d-io/k3d/v5/pkg/types/k3s"
 	"github.com/k3d-io/k3d/v5/pkg/util"
 	"github.com/k3d-io/k3d/v5/version"
 )
 
 // TransformSimpleToClusterConfig transforms a simple configuration to a full-fledged cluster configuration
-func TransformSimpleToClusterConfig(ctx context.Context, runtime runtimes.Runtime, simpleConfig conf.SimpleConfig, configFileName string) (*conf.ClusterConfig, error) {
+func TransformSimpleToClusterConfig(ctx context.Context, runtime runtimes.Runtime, simpleConfig conf.SimpleConfig) (*conf.ClusterConfig, error) {
 	// set default cluster name
 	if simpleConfig.Name == "" {
 		simpleConfig.Name = k3d.DefaultClusterName
@@ -177,6 +175,14 @@ func TransformSimpleToClusterConfig(ctx context.Context, runtime runtimes.Runtim
 	nodeCount := len(newCluster.Nodes)
 	nodeList := newCluster.Nodes
 
+	// -> MANIFESTS
+	for _, cfgManifest := range simpleConfig.Manifests {
+		newCluster.Manifests = append(newCluster.Manifests, k3d.Manifest{
+			Name:     cfgManifest.Name,
+			Manifest: cfgManifest.Manifest,
+		})
+	}
+
 	// -> VOLUMES
 	for _, volumeWithNodeFilters := range simpleConfig.Volumes {
 		nodes, err := util.FilterNodes(nodeList, volumeWithNodeFilters.NodeFilters)
@@ -186,31 +192,6 @@ func TransformSimpleToClusterConfig(ctx context.Context, runtime runtimes.Runtim
 
 		for _, node := range nodes {
 			node.Volumes = append(node.Volumes, volumeWithNodeFilters.Volume)
-		}
-	}
-
-	// -> MANIFESTS
-	for _, manifestWithNodeFilters := range simpleConfig.Manifests {
-		nodes, err := util.FilterNodes(nodeList, manifestWithNodeFilters.NodeFilters)
-		if err != nil {
-			return nil, fmt.Errorf("failed to filter nodes for manifest mapping '%s': %w", manifestWithNodeFilters.Manifest, err)
-		}
-
-		manifestFileName := filepath.Join(filepath.Dir(configFileName), manifestWithNodeFilters.Name)
-		manifestFile, err := os.Create(manifestFileName)
-		if err != nil {
-			l.Log().Fatalln(err)
-		}
-		l.Log().Debugf("Created temporary local manifest file: %s", manifestFile.Name())
-
-		if _, err = manifestFile.WriteString(manifestWithNodeFilters.Manifest); err != nil {
-			l.Log().Fatalf("Failed to write to output file: %+v", err)
-		}
-
-		manifestVolume := fmt.Sprintf("%s:%s/%s", manifestFile.Name(), k3s.K3sPathManifests, manifestWithNodeFilters.Name)
-
-		for _, node := range nodes {
-			node.Volumes = append(node.Volumes, manifestVolume)
 		}
 	}
 

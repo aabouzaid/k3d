@@ -109,9 +109,6 @@
           },
           "manifest": {
             "type": "string"
-          },
-          "nodeFilters": {
-            "$ref": "#/definitions/nodeFilters"
           }
         },
         "additionalProperties": false
