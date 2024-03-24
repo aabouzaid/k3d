@@ -99,6 +99,24 @@
         "additionalProperties": false
       }
     },
+    "manifests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "manifest": {
+            "type": "string"
+          },
+          "nodeFilters": {
+            "$ref": "#/definitions/nodeFilters"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
     "ports": {
       "type": "array",
       "items": {

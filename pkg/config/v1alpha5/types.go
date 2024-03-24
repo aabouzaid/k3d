@@ -63,6 +63,12 @@ type VolumeWithNodeFilters struct {
 	NodeFilters []string `mapstructure:"nodeFilters" json:"nodeFilters,omitempty"`
 }
 
+type ManifestWithNodeFilters struct {
+	Name        string   `mapstructure:"name" json:"name,omitempty"`
+	Manifest    string   `mapstructure:"manifest" json:"manifest,omitempty"`
+	NodeFilters []string `mapstructure:"nodeFilters" json:"nodeFilters,omitempty"`
+}
+
 type PortWithNodeFilters struct {
 	Port        string   `mapstructure:"port" json:"port,omitempty"`
 	NodeFilters []string `mapstructure:"nodeFilters" json:"nodeFilters,omitempty"`
@@ -149,19 +155,20 @@ type SimpleConfigRegistries struct {
 type SimpleConfig struct {
 	config.TypeMeta   `mapstructure:",squash"`
 	config.ObjectMeta `mapstructure:"metadata" json:"metadata,omitempty"`
-	Servers           int                     `mapstructure:"servers" json:"servers,omitempty"` //nolint:lll    // default 1
-	Agents            int                     `mapstructure:"agents" json:"agents,omitempty"`   //nolint:lll    // default 0
-	ExposeAPI         SimpleExposureOpts      `mapstructure:"kubeAPI" json:"kubeAPI,omitempty"`
-	Image             string                  `mapstructure:"image" json:"image,omitempty"`
-	Network           string                  `mapstructure:"network" json:"network,omitempty"`
-	Subnet            string                  `mapstructure:"subnet" json:"subnet,omitempty"`
-	ClusterToken      string                  `mapstructure:"token" json:"clusterToken,omitempty"` // default: auto-generated
-	Volumes           []VolumeWithNodeFilters `mapstructure:"volumes" json:"volumes,omitempty"`
-	Ports             []PortWithNodeFilters   `mapstructure:"ports" json:"ports,omitempty"`
-	Options           SimpleConfigOptions     `mapstructure:"options" json:"options,omitempty"`
-	Env               []EnvVarWithNodeFilters `mapstructure:"env" json:"env,omitempty"`
-	Registries        SimpleConfigRegistries  `mapstructure:"registries" json:"registries,omitempty"`
-	HostAliases       []k3d.HostAlias         `mapstructure:"hostAliases" json:"hostAliases,omitempty"`
+	Servers           int                       `mapstructure:"servers" json:"servers,omitempty"` //nolint:lll    // default 1
+	Agents            int                       `mapstructure:"agents" json:"agents,omitempty"`   //nolint:lll    // default 0
+	ExposeAPI         SimpleExposureOpts        `mapstructure:"kubeAPI" json:"kubeAPI,omitempty"`
+	Image             string                    `mapstructure:"image" json:"image,omitempty"`
+	Network           string                    `mapstructure:"network" json:"network,omitempty"`
+	Subnet            string                    `mapstructure:"subnet" json:"subnet,omitempty"`
+	ClusterToken      string                    `mapstructure:"token" json:"clusterToken,omitempty"` // default: auto-generated
+	Manifests         []ManifestWithNodeFilters `mapstructure:"manifests" json:"manifests,omitempty"`
+	Volumes           []VolumeWithNodeFilters   `mapstructure:"volumes" json:"volumes,omitempty"`
+	Ports             []PortWithNodeFilters     `mapstructure:"ports" json:"ports,omitempty"`
+	Options           SimpleConfigOptions       `mapstructure:"options" json:"options,omitempty"`
+	Env               []EnvVarWithNodeFilters   `mapstructure:"env" json:"env,omitempty"`
+	Registries        SimpleConfigRegistries    `mapstructure:"registries" json:"registries,omitempty"`
+	HostAliases       []k3d.HostAlias           `mapstructure:"hostAliases" json:"hostAliases,omitempty"`
 }
 
 // SimpleExposureOpts provides a simplified syntax compared to the original k3d.ExposureOpts

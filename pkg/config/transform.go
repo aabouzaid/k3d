@@ -42,6 +42,7 @@ import (
 	l "github.com/k3d-io/k3d/v5/pkg/logger"
 	"github.com/k3d-io/k3d/v5/pkg/runtimes"
 	k3d "github.com/k3d-io/k3d/v5/pkg/types"
+	"github.com/k3d-io/k3d/v5/pkg/types/k3s"
 	"github.com/k3d-io/k3d/v5/pkg/util"
 	"github.com/k3d-io/k3d/v5/version"
 )
@@ -184,6 +185,30 @@ func TransformSimpleToClusterConfig(ctx context.Context, runtime runtimes.Runtim
 
 		for _, node := range nodes {
 			node.Volumes = append(node.Volumes, volumeWithNodeFilters.Volume)
+		}
+	}
+
+	// -> MANIFESTS
+	for _, manifestWithNodeFilters := range simpleConfig.Manifests {
+		nodes, err := util.FilterNodes(nodeList, manifestWithNodeFilters.NodeFilters)
+		if err != nil {
+			return nil, fmt.Errorf("failed to filter nodes for manifest mapping '%s': %w", manifestWithNodeFilters.Manifest, err)
+		}
+
+		manifestFile, err := os.CreateTemp("", manifestWithNodeFilters.Name)
+		if err != nil {
+			l.Log().Fatalln(err)
+		}
+		l.Log().Debugf("Created temporary local manifest file: %s", manifestFile.Name())
+
+		if _, err = manifestFile.WriteString(manifestWithNodeFilters.Manifest); err != nil {
+			l.Log().Fatalf("Failed to write to output file: %+v", err)
+		}
+
+		manifestVolume := fmt.Sprintf("%s:%s/%s", manifestFile.Name(), k3s.K3sPathManifests, manifestWithNodeFilters.Name)
+
+		for _, node := range nodes {
+			node.Volumes = append(node.Volumes, manifestVolume)
 		}
 	}
 
