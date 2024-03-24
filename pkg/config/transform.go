@@ -28,6 +28,7 @@ import (
 	"io"
 	"net/netip"
 	"os"
+	"path/filepath"
 	"strings"
 
 	wharfie "github.com/rancher/wharfie/pkg/registries"
@@ -48,7 +49,7 @@ import (
 )
 
 // TransformSimpleToClusterConfig transforms a simple configuration to a full-fledged cluster configuration
-func TransformSimpleToClusterConfig(ctx context.Context, runtime runtimes.Runtime, simpleConfig conf.SimpleConfig) (*conf.ClusterConfig, error) {
+func TransformSimpleToClusterConfig(ctx context.Context, runtime runtimes.Runtime, simpleConfig conf.SimpleConfig, configFileName string) (*conf.ClusterConfig, error) {
 	// set default cluster name
 	if simpleConfig.Name == "" {
 		simpleConfig.Name = k3d.DefaultClusterName
@@ -195,7 +196,8 @@ func TransformSimpleToClusterConfig(ctx context.Context, runtime runtimes.Runtim
 			return nil, fmt.Errorf("failed to filter nodes for manifest mapping '%s': %w", manifestWithNodeFilters.Manifest, err)
 		}
 
-		manifestFile, err := os.CreateTemp("", manifestWithNodeFilters.Name)
+		manifestFileName := filepath.Join(filepath.Dir(configFileName), manifestWithNodeFilters.Name)
+		manifestFile, err := os.Create(manifestFileName)
 		if err != nil {
 			l.Log().Fatalln(err)
 		}
